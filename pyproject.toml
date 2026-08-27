@@ -1,0 +1,31 @@
+[build-system]
+requires = [
+    "setuptools>=68",
+]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "repomind"
+version = "0.1.0"
+description = "A production-style repository investigation agent built with Python and Ollama."
+readme = "README.md"
+requires-python = ">=3.11"
+
+dependencies = [
+    "pydantic>=2.0,<3.0",
+    "requests>=2.0,<3.0",
+]
+
+
+[project.scripts]
+repomind = "repomind.main:main"
+
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["repomind*"]
