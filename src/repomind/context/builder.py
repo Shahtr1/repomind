@@ -1,4 +1,3 @@
-from .selection import select_events, select_messages, message_sources
 from ..evidence.store import (
     add_tool_evidence,
     evidence_message,
@@ -6,15 +5,14 @@ from ..evidence.store import (
 )
 from ..models import (
     AgentEvent,
-    ToolExecutionResult,
     AgentState,
+    ToolExecutionResult,
 )
+from .selection import message_sources, select_events, select_messages
 
 
 def event_message(event: AgentEvent) -> dict | None:
-
     if event.type == "guardrail_blocked":
-
         return {
             "role": "user",
             "content": (
@@ -37,7 +35,6 @@ def process_tool_result(
     tool_arguments: dict,
     execution: ToolExecutionResult,
 ) -> None:
-
     if execution.status != "success":
         return
 
@@ -45,13 +42,9 @@ def process_tool_result(
         return
 
     if tool_definition.evidence is not None:
-
-        add_tool_evidence(
-            state, tool_definition.evidence, tool_arguments, execution.result
-        )
+        add_tool_evidence(state, tool_definition.evidence, tool_arguments, execution.result)
 
     if tool_definition.search is not None:
-
         search_result = tool_definition.search.result_parser(
             tool_arguments["query"], execution.result
         )
@@ -60,7 +53,6 @@ def process_tool_result(
 
 
 def build_context(state: AgentState) -> list[dict]:
-
     # Use a tiny window temporarily so we can force older tool results
     # out of the conversation and verify evidence fallback.
     selected_messages = select_messages(

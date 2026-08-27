@@ -1,16 +1,14 @@
 from .models import (
-    ReadFileArguments,
-    ListFilesArguments,
     CreateNoteArguments,
-    SearchFilesArguments,
     EvidenceConfig,
-    ToolDefinition,
+    ListFilesArguments,
+    ReadFileArguments,
     SearchConfig,
+    SearchFilesArguments,
+    ToolDefinition,
 )
-
 from .retrieval.parser import parse_search_results
-
-from .tools import read_file, list_files, create_note, search_files
+from .tools import create_note, list_files, read_file, search_files
 
 read_file_tool = {
     "type": "function",
@@ -45,9 +43,7 @@ create_note_tool = {
     "type": "function",
     "function": {
         "name": "create_note",
-        "description": (
-            "Creates a text file named " "agent_note.txt with the supplied content."
-        ),
+        "description": ("Creates a text file named agent_note.txt with the supplied content."),
         "parameters": CreateNoteArguments.model_json_schema(),
     },
 }

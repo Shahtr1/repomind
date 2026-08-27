@@ -2,7 +2,6 @@ from .models import ToolExecutionResult
 from .policy import tool_policy
 from .registry import tool_registry
 
-
 # --------------------------------------------------
 # Tool execution
 # --------------------------------------------------
@@ -15,7 +14,6 @@ def execute_tool(
     # Tool existence
 
     if tool_name not in tool_registry:
-
         return ToolExecutionResult(status="error", error=f"Unknown tool: {tool_name}")
 
     # Policy
@@ -23,19 +21,17 @@ def execute_tool(
     policy = tool_policy.get(tool_name)
 
     if not policy or not policy["allowed"]:
-
         return ToolExecutionResult(
             status="denied",
-            error=(f"Tool '{tool_name}' " f"is denied by application policy."),
+            error=(f"Tool '{tool_name}' is denied by application policy."),
         )
 
     # Approval
 
     if policy["requires_approval"] and not approved:
-
         return ToolExecutionResult(
             status="approval_required",
-            error=(f"Human approval is required before " f"executing '{tool_name}'."),
+            error=(f"Human approval is required before executing '{tool_name}'."),
         )
 
     # Registry
@@ -48,21 +44,17 @@ def execute_tool(
     # Argument validation
 
     try:
-
         arguments = argument_schema.model_validate(tool_arguments)
 
     except Exception as error:
-
         return ToolExecutionResult(status="invalid_arguments", error=str(error))
 
     # Execution
 
     try:
-
         result = tool(**arguments.model_dump())
 
         return ToolExecutionResult(status="success", result=result)
 
     except Exception as error:
-
         return ToolExecutionResult(status="error", error=str(error))

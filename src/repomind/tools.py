@@ -1,12 +1,7 @@
 import os
 from pathlib import Path
 
-from .config import (
-    IGNORED_DIRECTORIES,
-    IGNORED_FILES,
-    MAX_SEARCH_RESULTS,
-    REPOSITORY_ROOT
-)
+from .config import IGNORED_DIRECTORIES, IGNORED_FILES, MAX_SEARCH_RESULTS, REPOSITORY_ROOT
 
 
 def read_file(path: str) -> str:
@@ -15,22 +10,15 @@ def read_file(path: str) -> str:
         # Path overloads the / operator so that it means:
         # Join these paths together.
         REPOSITORY_ROOT / path
-    ).resolve() # "Give me the canonical form of this path."
-    # C:\AI-Learning\native_tools\..\config.py 
-    # can resolve to 
+    ).resolve()  # "Give me the canonical form of this path."
+    # C:\AI-Learning\native_tools\..\config.py
+    # can resolve to
     # C:\AI-Learning\config.py
 
-    if not requested_path.is_relative_to(
-        REPOSITORY_ROOT
-    ):
+    if not requested_path.is_relative_to(REPOSITORY_ROOT):
         return "Error: path is outside the repository."
 
-    with open(
-        requested_path,
-        "r",
-        encoding="utf-8"
-    ) as file:
-
+    with open(requested_path, encoding="utf-8") as file:
         return file.read()
 
 
@@ -39,23 +27,17 @@ def list_files() -> str:
     files = []
 
     for root, directories, filenames in os.walk(REPOSITORY_ROOT):
-
         directories[:] = [
-            directory
-            for directory in directories
-            if directory not in IGNORED_DIRECTORIES
+            directory for directory in directories if directory not in IGNORED_DIRECTORIES
         ]
 
         for filename in filenames:
-
             if filename in IGNORED_FILES:
                 continue
 
             path = Path(root) / filename
 
-            relative_path = path.relative_to(
-                REPOSITORY_ROOT
-            )
+            relative_path = path.relative_to(REPOSITORY_ROOT)
 
             # could produce
             # C:\Users\tramb\OneDrive\Documents\AI-Learning\native_tools\models.py
@@ -65,9 +47,7 @@ def list_files() -> str:
             # native_tools\models.py
             # So the LLM receives cleaner repository context.
 
-            files.append(
-                str(relative_path)
-            )
+            files.append(str(relative_path))
 
     return "\n".join(files)
 
@@ -84,52 +64,28 @@ def search_files(query: str) -> str:
     matches = []
 
     for root, directories, files in os.walk(REPOSITORY_ROOT):
-
         directories[:] = [
-            directory
-            for directory in directories
-            if directory not in IGNORED_DIRECTORIES
+            directory for directory in directories if directory not in IGNORED_DIRECTORIES
         ]
 
         for filename in files:
-
             if filename in IGNORED_FILES:
                 continue
 
             path = Path(root) / filename
 
-            relative_path = path.relative_to(
-                REPOSITORY_ROOT
-            )
+            relative_path = path.relative_to(REPOSITORY_ROOT)
 
             try:
-
-                with open(
-                    path,
-                    "r",
-                    encoding="utf-8"
-                ) as file:
-
-                    for line_number, line in enumerate(
-                        file,
-                        start=1
-                    ):
-
+                with open(path, encoding="utf-8") as file:
+                    for line_number, line in enumerate(file, start=1):
                         if query.lower() in line.lower():
-
-                            matches.append(
-                                f"{str(relative_path)}:{line_number}: "
-                                f"{line.rstrip()}"
-                            )
+                            matches.append(f"{str(relative_path)}:{line_number}: {line.rstrip()}")
 
                             if len(matches) >= MAX_SEARCH_RESULTS:
                                 return "\n".join(matches)
 
-            except (
-                UnicodeDecodeError,
-                PermissionError,
-                OSError
-            ):
+            except (UnicodeDecodeError, PermissionError, OSError):
                 continue
 
     if not matches:

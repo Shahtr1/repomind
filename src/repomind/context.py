@@ -11,11 +11,11 @@ from .evidence.store import (
 )
 from .models import (
     AgentEvent,
-    ToolExecutionResult,
     AgentState,
+    Message,
     SearchMatch,
     SearchResult,
-    Message,
+    ToolExecutionResult,
 )
 from .state import create_message
 
@@ -41,7 +41,6 @@ def tool_result_message(
 def event_message(event: AgentEvent) -> dict | None:
 
     if event.type == "guardrail_blocked":
-
         return {
             "role": "user",
             "content": (
@@ -71,15 +70,12 @@ def parse_search_results(query: str, result: str) -> SearchResult:
     matches = []
 
     for line in result.splitlines():
-
         try:
             location, content = line.split(": ", maxsplit=1)
 
             path, line_number = location.rsplit(":", maxsplit=1)
 
-            matches.append(
-                SearchMatch(path=path, line_number=int(line_number), content=content)
-            )
+            matches.append(SearchMatch(path=path, line_number=int(line_number), content=content))
 
         except ValueError:
             continue
@@ -108,13 +104,9 @@ def process_tool_result(
         return
 
     if tool_definition.evidence is not None:
-
-        add_tool_evidence(
-            state, tool_definition.evidence, tool_arguments, execution.result
-        )
+        add_tool_evidence(state, tool_definition.evidence, tool_arguments, execution.result)
 
     if tool_definition.search is not None:
-
         search_result = tool_definition.search.result_parser(
             tool_arguments["query"], execution.result
         )
@@ -155,9 +147,7 @@ def select_messages(
 
     # Everything not already required is eligible for the
     # recent-message window.
-    candidates = [
-        message for message in state.messages if message.id not in selected_ids
-    ]
+    candidates = [message for message in state.messages if message.id not in selected_ids]
 
     recent = candidates[-recent_limit:]
 

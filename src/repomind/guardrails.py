@@ -14,7 +14,6 @@ def check_completion(
     # A model response without tool calls is not automatically
     # a valid completion. The agent must actually provide an answer.
     if not proposed_answer.strip():
-
         return GuardrailResult(
             status="blocked",
             reason="The model attempted to complete without providing a final answer.",
@@ -26,7 +25,6 @@ def check_completion(
 
     # Evidence may be required for repository investigation answers.
     if state.requires_evidence and not state.evidence:
-
         return GuardrailResult(
             status="blocked",
             reason="Required source evidence is missing.",
@@ -49,13 +47,11 @@ def check_completion(
     )
 
     if unsupported_sources:
-
         return GuardrailResult(
             status="blocked",
             reason=(
                 "The proposed answer references repository sources "
-                "that were not verified with source evidence: "
-                + ", ".join(unsupported_sources)
+                "that were not verified with source evidence: " + ", ".join(unsupported_sources)
             ),
             required_action=(
                 "Inspect the referenced repository source with "

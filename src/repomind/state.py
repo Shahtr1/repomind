@@ -13,7 +13,7 @@ def save_state(state: AgentState, path: str = STATE_FILE) -> None:
 
 def load_state(path: str = STATE_FILE) -> AgentState:
 
-    with open(path, "r", encoding="utf-8") as file:
+    with open(path, encoding="utf-8") as file:
         return AgentState.model_validate_json(file.read())
 
 

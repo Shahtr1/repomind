@@ -53,11 +53,7 @@ def select_evidence(
 
     # Evidence is only injected when its source is not already
     # represented by a selected conversation message.
-    return [
-        evidence
-        for evidence in state.evidence
-        if evidence.source not in selected_sources
-    ]
+    return [evidence for evidence in state.evidence if evidence.source not in selected_sources]
 
 
 def evidence_message(evidence: Evidence) -> dict:
@@ -65,8 +61,6 @@ def evidence_message(evidence: Evidence) -> dict:
     return {
         "role": "system",
         "content": (
-            "Verified repository evidence\n\n"
-            f"Source: {evidence.source}\n\n"
-            f"{evidence.content}"
+            f"Verified repository evidence\n\nSource: {evidence.source}\n\n{evidence.content}"
         ),
     }

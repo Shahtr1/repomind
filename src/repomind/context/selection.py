@@ -1,5 +1,5 @@
-from .dependencies import is_incomplete_tool_call, resolve_tool_dependencies
 from ..models import AgentEvent, AgentState, Message
+from .dependencies import is_incomplete_tool_call, resolve_tool_dependencies
 
 
 def message_sources(
@@ -43,9 +43,7 @@ def select_messages(
 
     # Everything not already required is eligible for the
     # recent-message window.
-    candidates = [
-        message for message in state.messages if message.id not in selected_ids
-    ]
+    candidates = [message for message in state.messages if message.id not in selected_ids]
 
     recent = candidates[-recent_limit:]
 

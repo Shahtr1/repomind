@@ -1,6 +1,6 @@
 import requests
 
-from .config import OLLAMA_URL, MODEL, TEMPERATURE
+from .config import MODEL, OLLAMA_URL, TEMPERATURE
 
 
 def chat(messages: list, tools: list) -> dict:
@@ -12,8 +12,8 @@ def chat(messages: list, tools: list) -> dict:
             "messages": messages,
             "tools": tools,
             "stream": False,
-            "temperature": TEMPERATURE
-        }
+            "temperature": TEMPERATURE,
+        },
     )
 
     response.raise_for_status()

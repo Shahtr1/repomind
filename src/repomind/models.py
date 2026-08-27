@@ -1,6 +1,7 @@
-from typing import Literal, Callable, Any
+from collections.abc import Callable
+from typing import Any, Literal
 
-from pydantic import BaseModel, StrictStr, Field
+from pydantic import BaseModel, Field, StrictStr
 
 from .config import MAX_STEPS
 

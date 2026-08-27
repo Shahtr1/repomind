@@ -68,7 +68,6 @@ def related_assistant_message(
         return None
 
     for message in messages:
-
         if tool_call_id in tool_call_ids(message):
             return message
 
@@ -85,24 +84,19 @@ def resolve_tool_dependencies(
     changed = True
 
     while changed:
-
         changed = False
 
         for message in messages:
-
             # If an assistant tool-call is selected, include
             # every corresponding tool result.
             if message.id in resolved_ids:
-
                 call_ids = tool_call_ids(message)
 
                 if call_ids:
-
                     for result in related_tool_results(
                         message,
                         messages,
                     ):
-
                         if result.id not in resolved_ids:
                             resolved_ids.add(result.id)
                             changed = True
@@ -110,7 +104,6 @@ def resolve_tool_dependencies(
             # If a tool result is selected, include the
             # assistant message that requested it.
             if message.id in resolved_ids:
-
                 parent = related_assistant_message(
                     message,
                     messages,

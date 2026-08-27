@@ -1,12 +1,11 @@
 import os
 
-from .agent import run_agent, handle_pending_approval
+from .agent import handle_pending_approval, run_agent
 from .models import AgentState
-from .state import STATE_FILE, load_state, save_state, create_message
+from .state import STATE_FILE, create_message, load_state, save_state
 
 
 def create_initial_state() -> AgentState:
-
     state = AgentState(messages=[])
 
     state.messages.append(
@@ -51,19 +50,16 @@ def create_initial_state() -> AgentState:
 
 
 def main() -> None:
-
     # --------------------------------------------------
     # Load existing workflow or create new one
     # --------------------------------------------------
 
     if os.path.exists(STATE_FILE):
-
         state = load_state()
 
-        print(f"Loaded existing state: " f"{state.status}")
+        print(f"Loaded existing state: {state.status}")
 
     else:
-
         state = create_initial_state()
 
         save_state(state)
@@ -75,7 +71,6 @@ def main() -> None:
     # --------------------------------------------------
 
     if state.status == "waiting_for_approval":
-
         handle_pending_approval(state)
 
     # --------------------------------------------------
