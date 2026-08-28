@@ -44,23 +44,3 @@ def add_tool_evidence(
         source=source,
         content=result,
     )
-
-
-def select_evidence(
-    state: AgentState,
-    selected_sources: set[str],
-) -> list[Evidence]:
-
-    # Evidence is only injected when its source is not already
-    # represented by a selected conversation message.
-    return [evidence for evidence in state.evidence if evidence.source not in selected_sources]
-
-
-def evidence_message(evidence: Evidence) -> dict:
-
-    return {
-        "role": "system",
-        "content": (
-            f"Verified repository evidence\n\nSource: {evidence.source}\n\n{evidence.content}"
-        ),
-    }

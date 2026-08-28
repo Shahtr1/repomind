@@ -10,6 +10,20 @@ ToolExecutionStatus = Literal[
 ]
 
 
+class ToolOutcome(BaseModel):
+    """
+    Represents the outcome of the underlying tool operation.
+
+    This is different from ToolExecutionResult, which represents the
+    executor's higher-level result after policy, approval, argument
+    validation, and tool execution have been handled.
+    """
+
+    success: bool
+    result: str | None = None
+    error: str | None = None
+
+
 class ToolExecutionResult(BaseModel):
     status: ToolExecutionStatus
     result: str | None = None
@@ -23,6 +37,11 @@ class PendingToolCall(BaseModel):
     tool_call_id: str
     tool_name: str
     arguments: dict
+
+
+class ToolPolicy(BaseModel):
+    allowed: bool
+    requires_approval: bool
 
 
 class Evidence(BaseModel):
@@ -105,7 +124,7 @@ class Message(BaseModel):
 
 
 class AgentEvent(BaseModel):
-    type: Literal["guardrail_blocked"]
+    type: Literal["guardrail_blocked", "generation_truncated"]
     step: int  # which agent iteration produced the event
     sequence: int  # exact position in the execution timeline
     reason: str | None = None
@@ -124,16 +143,7 @@ class AgentState(BaseModel):
 
     retrieval_results: list[SearchResult] = Field(default_factory=list)
 
-    # Every time a new AgentState is created, call list() to create a brand-new empty list.
-
-    # list is itself a callable.
-    # When Pydantic needs a default:
-
-    # list()
-
-    # is called.
-
-    # Imagine having two states, the two states must have independent evidence collections.
+    # Each agent state receives its own independent evidence collection.
     evidence: list[Evidence] = Field(default_factory=list)
 
     events: list[AgentEvent] = Field(default_factory=list)

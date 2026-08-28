@@ -1,4 +1,4 @@
-from .models import ToolExecutionResult
+from .models import ToolExecutionResult, ToolOutcome
 from .policy import tool_policy
 from .registry import tool_registry
 
@@ -20,7 +20,7 @@ def execute_tool(
 
     policy = tool_policy.get(tool_name)
 
-    if not policy or not policy["allowed"]:
+    if policy is None or not policy.allowed:
         return ToolExecutionResult(
             status="denied",
             error=(f"Tool '{tool_name}' is denied by application policy."),
@@ -28,7 +28,7 @@ def execute_tool(
 
     # Approval
 
-    if policy["requires_approval"] and not approved:
+    if policy.requires_approval and not approved:
         return ToolExecutionResult(
             status="approval_required",
             error=(f"Human approval is required before executing '{tool_name}'."),
@@ -52,9 +52,26 @@ def execute_tool(
     # Execution
 
     try:
-        result = tool(**arguments.model_dump())
+        outcome = tool(**arguments.model_dump())
 
-        return ToolExecutionResult(status="success", result=result)
+        if not isinstance(outcome, ToolOutcome):
+            return ToolExecutionResult(
+                status="error",
+                error=(
+                    f"Tool '{tool_name}' returned an invalid outcome type: {type(outcome).__name__}"
+                ),
+            )
+
+        if not outcome.success:
+            return ToolExecutionResult(
+                status="error",
+                error=outcome.error,
+            )
+
+        return ToolExecutionResult(
+            status="success",
+            result=outcome.result,
+        )
 
     except Exception as error:
         return ToolExecutionResult(status="error", error=str(error))

@@ -1,8 +1,8 @@
-import json
+from tool_results import process_tool_result
 
+from .answers.reconstruction import collect_answer_fragments
 from .context.builder import (
     build_context,
-    process_tool_result,
 )
 from .display import print_tool_result
 from .evidence.store import resolve_evidence_source
@@ -11,8 +11,8 @@ from .guardrails import check_completion
 from .llm import chat
 from .models import AgentEvent, AgentState, PendingToolCall, ToolExecutionResult
 from .registry import tool_registry, tools
-from .retrieval.parser import tool_result_message
 from .state import create_message, next_sequence, save_state
+from .tool_messages import tool_result_message
 
 # --------------------------------------------------
 # One agent step
@@ -27,14 +27,22 @@ def run_agent_step(state: AgentState) -> None:
 
     context = build_context(state)
 
-    print("\nContext sent to LLM:")
-    print(json.dumps(context, indent=2))
+    print(f"\nContext prepared: {len(context)} messages")
 
-    assistant_message = chat(messages=context, tools=tools)
+    llm_response = chat(messages=context, tools=tools)
 
-    print("\nAssistant message:")
+    assistant_message = llm_response["message"]
+    done_reason = llm_response.get("done_reason")
 
-    print(json.dumps(assistant_message, indent=2))
+    print("\nAssistant response received:")
+    print(f"Done reason: {done_reason}")
+
+    tool_calls = assistant_message.get("tool_calls", [])
+
+    if tool_calls:
+        print(f"Tool calls: {len(tool_calls)}")
+    else:
+        print(f"Content length: {len(assistant_message.get('content', ''))} characters")
 
     # Persist assistant message in conversation
 
@@ -45,16 +53,67 @@ def run_agent_step(state: AgentState) -> None:
         )
     )
 
-    tool_calls = assistant_message.get("tool_calls", [])
-
     # --------------------------------------------------
-    # Final answer
+    # Final answer / incomplete model response
     # --------------------------------------------------
 
     if not tool_calls:
+        content = assistant_message.get("content", "")
+
+        # Ollama stopped generation because the model reached
+        # the configured output limit. Non-empty content does
+        # not necessarily represent a completed answer.
+        if done_reason == "length":
+            if content.strip():
+                print(
+                    "\nModel generation reached the output limit. "
+                    "Recording incomplete generation and continuing the agent loop."
+                )
+
+                state.events.append(
+                    AgentEvent(
+                        type="generation_truncated",
+                        step=state.step,
+                        sequence=next_sequence(state),
+                        reason=(
+                            "The model generation stopped because it reached "
+                            "the configured output limit."
+                        ),
+                        required_action=(
+                            "Continue the previous response from where it stopped. "
+                            "Do not restart the answer."
+                        ),
+                    )
+                )
+
+            else:
+                print(
+                    "\nModel generation reached the output limit without producing answer content."
+                )
+
+            save_state(state)
+
+            return
+
+        # An empty response without tool calls is not a final answer.
+        # The model produced neither an action nor usable answer content.
+        if not content.strip():
+            print(
+                "\nModel returned no tool calls and no answer content. Continuing the agent loop."
+            )
+
+            save_state(state)
+
+            return
+
+        # Reconstruct the complete answer artifact when this generation
+        # finishes normally after one or more truncated generations.
+        answer = collect_answer_fragments(state)
+
+        # Only actual answer content is evaluated as a completion attempt.
         guardrail = check_completion(
             state,
-            assistant_message["content"],
+            answer,
         )
 
         if guardrail.status == "blocked":
@@ -77,7 +136,7 @@ def run_agent_step(state: AgentState) -> None:
             return
 
         print("\nFinal answer:")
-        print(assistant_message["content"])
+        print(answer)
 
         state.status = "completed"
 

@@ -1,4 +1,4 @@
-from ..models import AgentEvent, AgentState, Message
+from ..models import AgentEvent, AgentState, Evidence, Message
 from .dependencies import is_incomplete_tool_call, resolve_tool_dependencies
 
 
@@ -10,9 +10,22 @@ def message_sources(
 
 
 def select_events(state: AgentState) -> list[AgentEvent]:
+    selected = []
+
+    # Keep the most recent event of each context-relevant type.
+    latest_events: dict[str, AgentEvent] = {}
+
+    for event in state.events:
+        if event.type in {
+            "guardrail_blocked",
+            "generation_truncated",
+        }:
+            latest_events[event.type] = event
+
+    selected.extend(latest_events.values())
 
     return sorted(
-        state.events,
+        selected,
         key=lambda event: event.sequence,
     )
 
@@ -65,3 +78,13 @@ def select_messages(
         selected,
         key=lambda message: message.sequence,
     )
+
+
+def select_evidence(
+    state: AgentState,
+    selected_sources: set[str],
+) -> list[Evidence]:
+
+    # Evidence is only injected when its source is not already
+    # represented by a selected conversation message.
+    return [evidence for evidence in state.evidence if evidence.source not in selected_sources]

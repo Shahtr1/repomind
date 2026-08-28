@@ -1,13 +1,10 @@
-def print_tool_result(execution) -> None:
+from .models import ToolExecutionResult
 
-    print("\nTool execution result:")
 
-    print(f"Status: {execution.status}")
-
-    if execution.result is not None:
-        print("\nResult:")
-        print(execution.result)
+def print_tool_result(
+    execution: ToolExecutionResult,
+) -> None:
+    print(f"\nTool execution result: {execution.status}")
 
     if execution.error is not None:
-        print("\nError:")
-        print(execution.error)
+        print(f"Error: {execution.error}")
