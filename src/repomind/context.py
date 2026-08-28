@@ -1,20 +1,20 @@
 import json
 
+from context.builder import evidence_message
+from context.selection import select_evidence
+
 from .context.dependencies import (
     is_incomplete_tool_call,
     resolve_tool_dependencies,
 )
-from .evidence.store import (
-    add_tool_evidence,
-    evidence_message,
-    select_evidence,
-)
+from .evidence.store import add_tool_evidence
 from .models import (
     AgentEvent,
     AgentState,
     Message,
     SearchMatch,
     SearchResult,
+    ToolDefinition,
     ToolExecutionResult,
 )
 from .state import create_message
@@ -92,7 +92,7 @@ def add_search_result(state: AgentState, query: str, result: str) -> None:
 
 def process_tool_result(
     state: AgentState,
-    tool_definition,
+    tool_definition: ToolDefinition,
     tool_arguments: dict,
     execution: ToolExecutionResult,
 ) -> None:
@@ -173,11 +173,8 @@ def select_messages(
 
 def build_context(state: AgentState) -> list[dict]:
 
-    # Use a tiny window temporarily so we can force older tool results
-    # out of the conversation and verify evidence fallback.
     selected_messages = select_messages(
         state,
-        recent_limit=2,
     )
 
     print("\nSelected messages:")
