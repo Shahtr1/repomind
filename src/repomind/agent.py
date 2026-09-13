@@ -1,5 +1,3 @@
-from tool_results import process_tool_result
-
 from .answers.reconstruction import collect_answer_fragments
 from .context.builder import (
     build_context,
@@ -13,6 +11,7 @@ from .models import AgentEvent, AgentState, PendingToolCall, ToolExecutionResult
 from .registry import tool_registry, tools
 from .state import create_message, next_sequence, save_state
 from .tool_messages import tool_result_message
+from .tool_results import process_tool_result
 
 # --------------------------------------------------
 # One agent step
@@ -31,18 +30,36 @@ def run_agent_step(state: AgentState) -> None:
 
     llm_response = chat(messages=context, tools=tools)
 
-    assistant_message = llm_response["message"]
-    done_reason = llm_response.get("done_reason")
+    done_reason = llm_response.finish_reason
+    tool_calls = llm_response.tool_calls
+
+    # Reconstruct the assistant message payload that will be
+    # persisted in AgentState and sent back to Ollama later.
+    assistant_message: dict[str, object] = {
+        "role": "assistant",
+        "content": llm_response.content,
+    }
+
+    # Ollama expects tool calls in its assistant message format.
+    # Convert our internal LLMToolCall models back into that format.
+    if tool_calls:
+        assistant_message["tool_calls"] = [
+            {
+                "id": tool_call.id,
+                "type": "function",
+                "function": {
+                    "name": tool_call.name,
+                    "arguments": tool_call.arguments,
+                },
+            }
+            for tool_call in tool_calls
+        ]
+        print(f"Tool calls: {len(tool_calls)}")
+    else:
+        print(f"Content length: {len(llm_response.content)} characters")
 
     print("\nAssistant response received:")
     print(f"Done reason: {done_reason}")
-
-    tool_calls = assistant_message.get("tool_calls", [])
-
-    if tool_calls:
-        print(f"Tool calls: {len(tool_calls)}")
-    else:
-        print(f"Content length: {len(assistant_message.get('content', ''))} characters")
 
     # Persist assistant message in conversation
 
@@ -58,7 +75,7 @@ def run_agent_step(state: AgentState) -> None:
     # --------------------------------------------------
 
     if not tool_calls:
-        content = assistant_message.get("content", "")
+        content = llm_response.content
 
         # Ollama stopped generation because the model reached
         # the configured output limit. Non-empty content does
@@ -149,9 +166,9 @@ def run_agent_step(state: AgentState) -> None:
     # --------------------------------------------------
 
     for tool_call in tool_calls:
-        tool_name = tool_call["function"]["name"]
+        tool_name = tool_call.name
 
-        tool_arguments = tool_call["function"]["arguments"]
+        tool_arguments = tool_call.arguments
 
         print(f"\nTool requested: {tool_name}")
 
@@ -169,7 +186,7 @@ def run_agent_step(state: AgentState) -> None:
 
         if execution.status == "approval_required":
             state.pending_tool_call = PendingToolCall(
-                tool_call_id=tool_call["id"],
+                tool_call_id=tool_call.id,
                 tool_name=tool_name,
                 arguments=tool_arguments,
             )
@@ -200,7 +217,7 @@ def run_agent_step(state: AgentState) -> None:
             tool_result_message(
                 state,
                 execution,
-                tool_call["id"],
+                tool_call.id,
                 source=source,
             )
         )

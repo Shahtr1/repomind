@@ -115,6 +115,25 @@ class ToolDefinition:
         self.search = search
 
 
+LLMFinishReason = Literal[
+    "stop",
+    "length",
+    "unknown",
+]
+
+
+class LLMToolCall(BaseModel):
+    id: str
+    name: str
+    arguments: dict
+
+
+class LLMResponse(BaseModel):
+    content: str
+    tool_calls: list[LLMToolCall] = Field(default_factory=list)
+    finish_reason: LLMFinishReason
+
+
 class Message(BaseModel):
     id: str
     sequence: int

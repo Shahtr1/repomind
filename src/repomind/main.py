@@ -37,9 +37,7 @@ def create_initial_state() -> AgentState:
             {
                 "role": "user",
                 "content": """
-                Explain how a tool call flows from the LLM to tool execution in this repository, including how approval-required tools are handled.
-
-                Trace the implementation across the relevant source files. Do not answer until you have inspected the actual source code needed to explain the complete flow.
+                Where is the agent completion decision implemented, and what prevents incomplete answers?
                 """,
             },
             persistent=True,

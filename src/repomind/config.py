@@ -23,15 +23,32 @@ OLLAMA_TIMEOUT_SECONDS = 120
 REPOSITORY_ROOT = Path(".").resolve()
 
 IGNORED_DIRECTORIES = {
+    # Version control
     ".git",
+    # Python
     ".venv",
-    "node_modules",
+    "venv",
     "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    # IDEs
+    ".idea",
+    ".vscode",
+    # JavaScript / frontend
+    "node_modules",
+    "dist",
+    # Java / Gradle / Maven
+    "target",
+    "build",
+    # Common tool/cache directories
+    ".cache",
 }
 
 IGNORED_FILES = {
     "agent_state.json",
     "agent_note.txt",
+    "state.json",
 }
 
 
