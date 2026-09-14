@@ -50,7 +50,7 @@ def source_basename(
     return normalized_source.rsplit("/", maxsplit=1)[-1]
 
 
-def resolve_evidence_source(
+def resolve_source_reference(
     referenced_source: str,
     evidence_sources: set[str],
 ) -> SourceReferenceResolution:
@@ -194,7 +194,7 @@ def check_source_references(
     ambiguous_sources: list[str] = []
 
     for referenced_source in referenced_sources:
-        resolution = resolve_evidence_source(
+        resolution = resolve_source_reference(
             referenced_source,
             evidence_sources,
         )

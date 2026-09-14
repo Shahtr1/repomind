@@ -23,7 +23,7 @@ def execute_tool(
     if policy is None or not policy.allowed:
         return ToolExecutionResult(
             status="denied",
-            error=(f"Tool '{tool_name}' is denied by application policy."),
+            error=f"Tool '{tool_name}' is denied by application policy.",
         )
 
     # Approval
@@ -31,7 +31,7 @@ def execute_tool(
     if policy.requires_approval and not approved:
         return ToolExecutionResult(
             status="approval_required",
-            error=(f"Human approval is required before executing '{tool_name}'."),
+            error=f"Human approval is required before executing '{tool_name}'.",
         )
 
     # Registry

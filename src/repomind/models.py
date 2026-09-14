@@ -1,9 +1,8 @@
 from collections.abc import Callable
 from typing import Any, Literal
 
+from config import MAX_STEPS
 from pydantic import BaseModel, Field, StrictStr
-
-from .config import MAX_STEPS
 
 ToolExecutionStatus = Literal[
     "success", "denied", "approval_required", "invalid_arguments", "error"
@@ -115,6 +114,11 @@ class ToolDefinition:
         self.search = search
 
 
+LLMDecisionType = Literal[
+    "propose_final_answer",
+    "cannot_complete",
+]
+
 LLMFinishReason = Literal[
     "stop",
     "length",
@@ -128,10 +132,47 @@ class LLMToolCall(BaseModel):
     arguments: dict
 
 
+class LLMDecision(BaseModel):
+    """
+    Represents the LLM's proposed completion decision.
+
+    This model is used only when the model is not requesting a tool.
+
+    The model does not describe the next investigation action here.
+    If more repository information is required, it must request a
+    native tool call instead.
+    """
+
+    decision: LLMDecisionType
+
+    # Required when decision == "propose_final_answer".
+    answer: str | None = None
+
+    # Explains why the model selected the decision.
+    reason: StrictStr
+
+
 class LLMResponse(BaseModel):
+    """
+    Normalized response returned by the LLM adapter.
+
+    The finish reason describes how generation ended.
+    The decision describes what the model proposes to do next.
+
+    These are different concepts:
+
+        finish_reason == "stop"
+            means only that model generation stopped.
+
+        decision == "propose_final_answer"
+            means the model proposed an answer, which still requires
+            application-side completion validation.
+    """
+
     content: str
     tool_calls: list[LLMToolCall] = Field(default_factory=list)
     finish_reason: LLMFinishReason
+    decision: LLMDecision | None = None
 
 
 class Message(BaseModel):
@@ -143,7 +184,12 @@ class Message(BaseModel):
 
 
 class AgentEvent(BaseModel):
-    type: Literal["guardrail_blocked", "generation_truncated"]
+    type: Literal[
+        "guardrail_blocked",
+        "generation_truncated",
+        "investigation_continued",
+        "investigation_cannot_complete",
+    ]
     step: int  # which agent iteration produced the event
     sequence: int  # exact position in the execution timeline
     reason: str | None = None

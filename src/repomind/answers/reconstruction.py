@@ -56,6 +56,13 @@ def collect_answer_fragments(state: AgentState) -> str:
 
     payload = item.payload
 
+    """
+        This means the newest message must be:
+    
+        1.  An assistant message.
+        2.  Without tool calls.
+        3.  With non-empty content.
+    """
     if (
         payload.get("role") != "assistant"
         or payload.get("tool_calls")
