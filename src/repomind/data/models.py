@@ -1,12 +1,18 @@
 from collections.abc import Callable
-from typing import Any, Literal
+from typing import Any
 
 from config import MAX_STEPS
 from pydantic import BaseModel, Field, StrictStr
 
-ToolExecutionStatus = Literal[
-    "success", "denied", "approval_required", "invalid_arguments", "error"
-]
+from .constants import (
+    AgentEventType,
+    AgentStatus,
+    GuardrailStatus,
+    LLMDecisionType,
+    LLMFinishReason,
+    LLMPhase,
+    ToolExecutionStatus,
+)
 
 
 class ToolOutcome(BaseModel):
@@ -27,9 +33,6 @@ class ToolExecutionResult(BaseModel):
     status: ToolExecutionStatus
     result: str | None = None
     error: str | None = None
-
-
-AgentStatus = Literal["running", "waiting_for_approval", "completed", "failed"]
 
 
 class PendingToolCall(BaseModel):
@@ -91,9 +94,6 @@ class SearchConfig:
         self.result_parser = result_parser
 
 
-GuardrailStatus = Literal["allowed", "blocked"]
-
-
 class GuardrailResult(BaseModel):
     status: GuardrailStatus
     reason: str | None = None
@@ -114,18 +114,6 @@ class ToolDefinition:
         self.search = search
 
 
-LLMDecisionType = Literal[
-    "propose_final_answer",
-    "cannot_complete",
-]
-
-LLMFinishReason = Literal[
-    "stop",
-    "length",
-    "unknown",
-]
-
-
 class LLMToolCall(BaseModel):
     id: str
     name: str
@@ -136,17 +124,13 @@ class LLMDecision(BaseModel):
     """
     Represents the LLM's proposed completion decision.
 
-    This model is used only when the model is not requesting a tool.
+    This model is used only to decide whether the investigation
+    is ready for final-answer generation.
 
-    The model does not describe the next investigation action here.
-    If more repository information is required, it must request a
-    native tool call instead.
+    The final answer is generated separately as ordinary text.
     """
 
     decision: LLMDecisionType
-
-    # Required when decision == "propose_final_answer".
-    answer: str | None = None
 
     # Explains why the model selected the decision.
     reason: StrictStr
@@ -173,6 +157,7 @@ class LLMResponse(BaseModel):
     tool_calls: list[LLMToolCall] = Field(default_factory=list)
     finish_reason: LLMFinishReason
     decision: LLMDecision | None = None
+    phase: LLMPhase
 
 
 class Message(BaseModel):
@@ -184,14 +169,10 @@ class Message(BaseModel):
 
 
 class AgentEvent(BaseModel):
-    type: Literal[
-        "guardrail_blocked",
-        "generation_truncated",
-        "investigation_continued",
-        "investigation_cannot_complete",
-    ]
+    type: AgentEventType
     step: int  # which agent iteration produced the event
     sequence: int  # exact position in the execution timeline
+    phase: LLMPhase | None = None
     reason: str | None = None
     required_action: str | None = None
 
@@ -201,7 +182,7 @@ class AgentState(BaseModel):
     step: int = 0
     sequence: int = 0
     max_steps: int = MAX_STEPS
-    status: AgentStatus = "running"
+    status: AgentStatus = AgentStatus.RUNNING
     pending_tool_call: PendingToolCall | None = None
 
     requires_evidence: bool = True

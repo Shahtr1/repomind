@@ -1,8 +1,8 @@
-from ..event_messages import event_message
-from ..models import (
+from ..data.models import (
     AgentState,
     Evidence,
 )
+from ..messages.event_messages import event_message
 from .selection import message_sources, select_events, select_evidence, select_messages
 
 

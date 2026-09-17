@@ -2,8 +2,9 @@ import os
 from collections.abc import Iterator
 from pathlib import Path
 
+from data.models import ToolOutcome
+
 from .config import IGNORED_DIRECTORIES, IGNORED_FILES, MAX_SEARCH_RESULTS, REPOSITORY_ROOT
-from .models import ToolOutcome
 
 
 def is_ignored_path(path: Path) -> bool:

@@ -1,5 +1,5 @@
 # Keep assistant tool calls and their tool results together.
-from ..models import Message
+from data.models import Message
 
 
 def tool_call_ids(message: Message) -> set[str]:

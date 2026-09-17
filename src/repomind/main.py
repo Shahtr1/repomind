@@ -1,6 +1,8 @@
 import os
 
-from .models import AgentState
+from data.constants import AgentStatus
+from data.models import AgentState
+
 from .orchestration import run_agent
 from .orchestration.approvals import handle_pending_approval
 from .state import STATE_FILE, create_message, load_state, save_state
@@ -134,7 +136,7 @@ def main() -> None:
     # Resume pending approval
     # --------------------------------------------------
 
-    if state.status == "waiting_for_approval":
+    if state.status == AgentStatus.WAITING_FOR_APPROVAL:
         handle_pending_approval(state)
 
     # --------------------------------------------------

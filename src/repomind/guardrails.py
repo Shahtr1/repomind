@@ -1,9 +1,8 @@
 import re
 from enum import StrEnum
 
+from data.models import AgentState, GuardrailResult
 from pydantic import BaseModel
-
-from .models import AgentState, GuardrailResult
 
 
 class SourceReferenceResolutionStatus(StrEnum):

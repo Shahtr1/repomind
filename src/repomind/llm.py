@@ -1,6 +1,8 @@
 import json
 
 import requests
+from data.constants import LLMFinishReason, LLMPhase
+from data.models import LLMDecision, LLMResponse, LLMToolCall
 
 from .config import (
     MODEL,
@@ -9,7 +11,6 @@ from .config import (
     OLLAMA_URL,
     TEMPERATURE,
 )
-from .models import LLMDecision, LLMResponse, LLMToolCall
 
 
 def parse_llm_decision(content: str) -> LLMDecision | None:
@@ -37,6 +38,7 @@ def chat(
     messages: list[dict],
     tools: list[dict],
     *,
+    phase: LLMPhase,
     require_decision: bool = False,
 ) -> LLMResponse:
     """
@@ -117,12 +119,17 @@ def chat(
 
     done_reason = result.get("done_reason")
 
-    if done_reason not in {"stop", "length"}:
-        done_reason = "unknown"
+    if done_reason == LLMFinishReason.STOP.value:
+        done_reason = LLMFinishReason.STOP
+    elif done_reason == LLMFinishReason.LENGTH.value:
+        done_reason = LLMFinishReason.LENGTH
+    else:
+        done_reason = LLMFinishReason.UNKNOWN
 
     return LLMResponse(
         content=content,
         tool_calls=tool_calls,
         finish_reason=done_reason,
         decision=decision,
+        phase=phase,
     )

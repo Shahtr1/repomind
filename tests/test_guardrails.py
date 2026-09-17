@@ -1,4 +1,5 @@
 import pytest
+from data.models import AgentState, Evidence
 
 from repomind.guardrails import (
     SourceReferenceResolutionStatus,
@@ -10,7 +11,6 @@ from repomind.guardrails import (
     resolve_evidence_source,
     source_basename,
 )
-from repomind.models import AgentState, Evidence
 
 
 @pytest.mark.parametrize(
@@ -188,6 +188,4 @@ def test_check_completion_blocks_empty_answer_before_other_checks() -> None:
     result = check_completion(state, "   ")
 
     assert result.status == "blocked"
-    assert result.reason == (
-        "The model attempted to complete without providing a final answer."
-    )
+    assert result.reason == ("The model attempted to complete without providing a final answer.")

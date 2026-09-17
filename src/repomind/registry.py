@@ -1,4 +1,4 @@
-from .models import (
+from data.models import (
     CreateNoteArguments,
     EvidenceConfig,
     ListFilesArguments,
@@ -7,6 +7,7 @@ from .models import (
     SearchFilesArguments,
     ToolDefinition,
 )
+
 from .retrieval.parser import parse_search_results
 from .tools import create_note, list_files, read_file, search_files
 

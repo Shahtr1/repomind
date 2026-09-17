@@ -1,7 +1,9 @@
+from data.constants import ToolExecutionStatus
+from data.models import AgentState, ToolDefinition, ToolExecutionResult
+
 from ..display import print_tool_result
 from ..evidence.store import resolve_evidence_source
-from ..models import AgentState, ToolDefinition, ToolExecutionResult
-from ..tool_messages import tool_result_message
+from ..messages.tool_messages import tool_result_message
 
 
 def record_execution_result(
@@ -21,7 +23,7 @@ def record_execution_result(
 
     source = None
 
-    if execution.status == "success" and tool_definition.evidence is not None:
+    if execution.status == ToolExecutionStatus.SUCCESS and tool_definition.evidence is not None:
         source = resolve_evidence_source(
             tool_definition.evidence,
             tool_arguments,

@@ -1,8 +1,9 @@
 # --------------------------------------------------
 # Resume pending approval
 # --------------------------------------------------
+from ..data.constants import AgentStatus, ToolExecutionStatus
+from ..data.models import AgentState, ToolExecutionResult
 from ..executor import execute_tool
-from ..models import AgentState, ToolExecutionResult
 from ..registry import tool_registry
 from ..state import save_state
 from ..tool_results import process_tool_result
@@ -33,7 +34,7 @@ def handle_pending_approval(state: AgentState) -> None:
 
     else:
         execution = ToolExecutionResult(
-            status="denied",
+            status=ToolExecutionStatus.DENIED,
             error=f"Human rejected execution of '{pending.tool_name}'.",
         )
 
@@ -51,6 +52,6 @@ def handle_pending_approval(state: AgentState) -> None:
 
     # Continue workflow
 
-    state.status = "running"
+    state.status = AgentStatus.RUNNING
 
     save_state(state)

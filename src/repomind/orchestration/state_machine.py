@@ -1,4 +1,6 @@
-from ..models import AgentState
+from data.constants import AgentStatus
+from data.models import AgentState
+
 from ..state import save_state
 from .runner import run_agent_step
 
@@ -11,28 +13,28 @@ def run_agent(state: AgentState) -> None:
 
     while state.step < state.max_steps:
         match state.status:
-            case "running":
+            case AgentStatus.RUNNING:
                 run_agent_step(state)
 
-            case "waiting_for_approval":
+            case AgentStatus.WAITING_FOR_APPROVAL:
                 print("\nAgent is paused waiting for approval.")
 
                 save_state(state)
 
                 break
 
-            case "completed":
+            case AgentStatus.COMPLETED:
                 print("\nAgent is already completed.")
 
                 break
 
-            case "failed":
+            case AgentStatus.FAILED:
                 print("\nAgent has failed.")
 
                 break
 
     else:
-        state.status = "failed"
+        state.status = AgentStatus.FAILED
 
         save_state(state)
 

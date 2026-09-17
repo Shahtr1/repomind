@@ -1,5 +1,7 @@
+from data.constants import AgentStatus, ToolExecutionStatus
+from data.models import AgentState, PendingToolCall
+
 from ..executor import execute_tool
-from ..models import AgentState, PendingToolCall
 from ..registry import tool_registry
 from ..state import save_state
 from ..tool_results import process_tool_result
@@ -38,14 +40,14 @@ def handle_tool_calls(
             execution,
         )
 
-        if execution.status == "approval_required":
+        if execution.status == ToolExecutionStatus.APPROVAL_REQUIRED:
             state.pending_tool_call = PendingToolCall(
                 tool_call_id=tool_call.id,
                 tool_name=tool_name,
                 arguments=tool_arguments,
             )
 
-            state.status = "waiting_for_approval"
+            state.status = AgentStatus.WAITING_FOR_APPROVAL
 
             save_state(state)
 

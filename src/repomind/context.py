@@ -7,6 +7,7 @@ from .context.dependencies import (
     is_incomplete_tool_call,
     resolve_tool_dependencies,
 )
+from .constants import AgentEventType, ToolExecutionStatus
 from .evidence.store import add_tool_evidence
 from .models import (
     AgentEvent,
@@ -40,7 +41,7 @@ def tool_result_message(
 
 def event_message(event: AgentEvent) -> dict | None:
 
-    if event.type == "guardrail_blocked":
+    if event.type == AgentEventType.GUARDRAIL_BLOCKED:
         return {
             "role": "user",
             "content": (
@@ -97,7 +98,7 @@ def process_tool_result(
     execution: ToolExecutionResult,
 ) -> None:
 
-    if execution.status != "success":
+    if execution.status != ToolExecutionStatus.SUCCESS:
         return
 
     if execution.result is None:

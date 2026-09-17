@@ -1,4 +1,5 @@
-from ..models import AgentState
+from data.constants import AgentEventType
+from data.models import AgentState
 
 
 def collect_answer_fragments(state: AgentState) -> str:
@@ -83,7 +84,7 @@ def collect_answer_fragments(state: AgentState) -> str:
     while index >= 1:
         _, event_type, event = timeline[index]
 
-        if event_type != "event" or event.type != "generation_truncated":
+        if event_type != "event" or event.type != AgentEventType.GENERATION_TRUNCATED:
             break
 
         _, previous_type, previous_item = timeline[index - 1]

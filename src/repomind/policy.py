@@ -1,4 +1,4 @@
-from .models import ToolPolicy
+from data.models import ToolPolicy
 
 tool_policy: dict[str, ToolPolicy] = {
     "read_file": ToolPolicy(

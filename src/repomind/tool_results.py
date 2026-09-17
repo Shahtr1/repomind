@@ -1,5 +1,7 @@
+from data.constants import ToolExecutionStatus
+from data.models import AgentState, ToolExecutionResult
+
 from .evidence.store import add_tool_evidence
-from .models import AgentState, ToolExecutionResult
 
 
 def process_tool_result(
@@ -8,7 +10,7 @@ def process_tool_result(
     tool_arguments: dict,
     execution: ToolExecutionResult,
 ) -> None:
-    if execution.status != "success":
+    if execution.status != ToolExecutionStatus.SUCCESS:
         return
 
     if execution.result is None:

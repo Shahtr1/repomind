@@ -1,7 +1,8 @@
+from data.constants import AgentEventType, AgentStatus, GuardrailStatus
+from data.models import AgentEvent, AgentState, LLMDecision, LLMResponse
+
 from ..guardrails import check_completion
-from ..models import AgentEvent, AgentState, LLMDecision, LLMResponse
 from ..state import next_sequence, save_state
-from .tool_calls import handle_tool_calls
 
 
 def handle_missing_decision(
@@ -19,7 +20,7 @@ def handle_missing_decision(
 
     state.events.append(
         AgentEvent(
-            type="investigation_continued",
+            type=AgentEventType.INVESTIGATION_CONTINUED,
             step=state.step,
             sequence=next_sequence(state),
             reason="The model response did not contain a structured investigation decision.",
@@ -48,7 +49,7 @@ def handle_cannot_complete(
 
     state.events.append(
         AgentEvent(
-            type="investigation_cannot_complete",
+            type=AgentEventType.INVESTIGATION_CANNOT_COMPLETE,
             step=state.step,
             sequence=next_sequence(state),
             reason=decision.reason,
@@ -59,32 +60,29 @@ def handle_cannot_complete(
     save_state(state)
 
 
-def handle_final_answer_proposal(
+def handle_final_answer(
     state: AgentState,
-    decision: LLMDecision,
+    answer: str,
 ) -> None:
     """
-    Validate a model-proposed final answer.
+    Validate a separately generated final answer.
 
-    The model may propose completion, but the application decides
-    whether the answer satisfies the completion guardrails.
+    The answer is ordinary model-generated text. The application
+    decides whether it satisfies the completion guardrails.
     """
 
-    answer = (decision.answer or "").strip()
+    answer = answer.strip()
 
     if not answer:
-        print(
-            "\nModel proposed a final answer, but the answer content "
-            "was empty. Continuing the investigation."
-        )
+        print("\nModel generated an empty final answer. Continuing the investigation.")
 
         state.events.append(
             AgentEvent(
-                type="investigation_continued",
+                type=AgentEventType.INVESTIGATION_CONTINUED,
                 step=state.step,
                 sequence=next_sequence(state),
-                reason=("The model proposed a final answer without providing answer content."),
-                required_action=("Return a non-empty answer or continue investigating."),
+                reason="The final-answer generation returned empty content.",
+                required_action="Generate a non-empty final answer.",
             )
         )
 
@@ -96,14 +94,14 @@ def handle_final_answer_proposal(
         answer,
     )
 
-    if guardrail.status == "blocked":
+    if guardrail.status == GuardrailStatus.BLOCKED:
         print("\nGuardrail blocked completion:")
         print(f"Reason: {guardrail.reason}")
         print(f"Required action: {guardrail.required_action}")
 
         state.events.append(
             AgentEvent(
-                type="guardrail_blocked",
+                type=AgentEventType.GUARDRAIL_BLOCKED,
                 step=state.step,
                 sequence=next_sequence(state),
                 reason=guardrail.reason,
@@ -117,7 +115,7 @@ def handle_final_answer_proposal(
     print("\nFinal answer:")
     print(answer)
 
-    state.status = "completed"
+    state.status = AgentStatus.COMPLETED
 
     save_state(state)
 
@@ -141,10 +139,11 @@ def handle_generation_truncated(
 
     state.events.append(
         AgentEvent(
-            type="generation_truncated",
+            type=AgentEventType.GENERATION_TRUNCATED,
+            phase=llm_response.phase,
             step=state.step,
             sequence=next_sequence(state),
-            reason=("The model generation stopped because it reached the configured output limit."),
+            reason="The model generation stopped because it reached the configured output limit.",
             required_action=(
                 "Continue the previous response from where it stopped. Do not restart the answer."
             ),
@@ -152,68 +151,3 @@ def handle_generation_truncated(
     )
 
     save_state(state)
-
-
-def handle_no_tool_response(
-    state: AgentState,
-    llm_response: LLMResponse,
-) -> None:
-    """
-    Handle an LLM response that contains no tool calls.
-
-    A no-tool response is not automatically final.
-
-    A structured decision is handled only when one was explicitly
-    requested. Otherwise, the response is treated as incomplete
-    and must not become a final answer.
-    """
-
-    if llm_response.finish_reason == "length":
-        handle_generation_truncated(
-            state,
-            llm_response,
-        )
-        return
-
-    decision = llm_response.decision
-
-    if decision is None:
-        handle_missing_decision(state)
-        return
-
-    match decision.decision:
-        case "cannot_complete":
-            handle_cannot_complete(
-                state,
-                decision,
-            )
-
-        case "propose_final_answer":
-            handle_final_answer_proposal(
-                state,
-                decision,
-            )
-
-
-def handle_llm_response(
-    state: AgentState,
-    llm_response,
-) -> None:
-    """
-    Route the LLM response to the appropriate handler.
-
-    This function decides which response category needs handling,
-    but the individual handlers own the actual behavior.
-    """
-
-    if llm_response.tool_calls:
-        handle_tool_calls(
-            state,
-            llm_response.tool_calls,
-        )
-        return
-
-    handle_no_tool_response(
-        state,
-        llm_response,
-    )

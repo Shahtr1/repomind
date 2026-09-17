@@ -1,4 +1,4 @@
-from ..models import (
+from data.models import (
     SearchMatch,
     SearchResult,
 )

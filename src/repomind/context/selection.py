@@ -1,4 +1,6 @@
-from ..models import AgentEvent, AgentState, Evidence, Message
+from data.constants import AgentEventType
+from data.models import AgentEvent, AgentState, Evidence, Message
+
 from .dependencies import is_incomplete_tool_call, resolve_tool_dependencies
 
 
@@ -13,12 +15,12 @@ def select_events(state: AgentState) -> list[AgentEvent]:
     selected = []
 
     # Keep the most recent event of each context-relevant type.
-    latest_events: dict[str, AgentEvent] = {}
+    latest_events: dict[AgentEventType, AgentEvent] = {}
 
     for event in state.events:
         if event.type in {
-            "guardrail_blocked",
-            "generation_truncated",
+            AgentEventType.GUARDRAIL_BLOCKED,
+            AgentEventType.GENERATION_TRUNCATED,
         }:
             latest_events[event.type] = event
 
@@ -26,7 +28,7 @@ def select_events(state: AgentState) -> list[AgentEvent]:
 
     return sorted(
         selected,
-        key=lambda event: event.sequence,
+        key=lambda current_event: current_event.sequence,
     )
 
 
