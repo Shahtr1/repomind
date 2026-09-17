@@ -1,6 +1,6 @@
 import uuid
 
-from data.models import AgentState, Message
+from .data.models import AgentState, Message
 
 STATE_FILE = "agent_state.json"
 
