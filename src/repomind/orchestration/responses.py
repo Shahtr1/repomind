@@ -1,7 +1,7 @@
-from data.constants import AgentEventType, AgentStatus, GuardrailStatus
-from data.models import AgentEvent, AgentState, LLMDecision, LLMResponse
-
+from ..data.constants import AgentEventType, AgentStatus, GuardrailStatus
+from ..data.models import AgentEvent, AgentState, LLMDecision, LLMResponse
 from ..guardrails import check_completion
+from ..prompts.recovery import generation_recovery_instruction
 from ..state import next_sequence, save_state
 
 
@@ -144,9 +144,7 @@ def handle_generation_truncated(
             step=state.step,
             sequence=next_sequence(state),
             reason="The model generation stopped because it reached the configured output limit.",
-            required_action=(
-                "Continue the previous response from where it stopped. Do not restart the answer."
-            ),
+            required_action=generation_recovery_instruction(llm_response.phase),
         )
     )
 

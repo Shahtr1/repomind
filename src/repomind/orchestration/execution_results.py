@@ -3,7 +3,7 @@ from data.models import AgentState, ToolDefinition, ToolExecutionResult
 
 from ..display import print_tool_result
 from ..evidence.store import resolve_evidence_source
-from ..messages.tool_messages import tool_result_message
+from ..prompts.tool_messages import tool_result_message
 
 
 def record_execution_result(

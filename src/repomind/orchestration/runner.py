@@ -27,7 +27,7 @@ def run_agent_step(state: AgentState) -> None:
     print(f"\n--- Agent step {state.step} ---")
 
     context = build_context(state)
-    print(f"\nContext prepared: {len(context)} messages")
+    print(f"\nContext prepared: {len(context)} prompts")
 
     # ------------------------------------------------------------------
     # Phase 1: Tool-use call
