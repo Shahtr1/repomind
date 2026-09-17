@@ -1,4 +1,4 @@
-from data.models import AgentState, LLMResponse
+from repomind.data.models import AgentState, LLMResponse
 
 from ..state import create_message
 

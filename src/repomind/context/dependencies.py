@@ -1,5 +1,5 @@
 # Keep assistant tool calls and their tool results together.
-from data.models import Message
+from repomind.data.models import Message
 
 
 def tool_call_ids(message: Message) -> set[str]:

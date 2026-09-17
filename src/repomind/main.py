@@ -1,7 +1,7 @@
 import os
 
-from data.constants import AgentStatus
-from data.models import AgentState
+from repomind.data.constants import AgentStatus
+from repomind.data.models import AgentState
 
 from .orchestration import run_agent
 from .orchestration.approvals import handle_pending_approval
@@ -69,18 +69,15 @@ def create_initial_state() -> AgentState:
                 {
                   "decision": "propose_final_answer"
                                 | "cannot_complete",
-                  "answer": "string or null",
                   "reason": "string",
                 }
 
                 Field rules:
                 
                 - propose_final_answer:
-                    answer must contain the proposed answer;
                     reason must explain why the evidence is sufficient.
                 
                 - cannot_complete:
-                    answer must be null;
                     reason must explain the limitation.
 
                 Important:

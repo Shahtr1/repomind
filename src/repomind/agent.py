@@ -1,4 +1,4 @@
-from data.models import AgentState
+from repomind.data.models import AgentState
 
 from .orchestration import run_agent
 

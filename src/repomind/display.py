@@ -1,4 +1,4 @@
-from data.models import ToolExecutionResult
+from repomind.data.models import ToolExecutionResult
 
 
 def print_tool_result(

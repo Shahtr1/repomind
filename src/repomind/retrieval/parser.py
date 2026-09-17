@@ -1,4 +1,4 @@
-from data.models import (
+from repomind.data.models import (
     SearchMatch,
     SearchResult,
 )

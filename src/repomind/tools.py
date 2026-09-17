@@ -2,7 +2,7 @@ import os
 from collections.abc import Iterator
 from pathlib import Path
 
-from data.models import ToolOutcome
+from repomind.data.models import ToolOutcome
 
 from .config import IGNORED_DIRECTORIES, IGNORED_FILES, MAX_SEARCH_RESULTS, REPOSITORY_ROOT
 

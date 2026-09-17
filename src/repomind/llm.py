@@ -1,8 +1,9 @@
 import json
 
 import requests
-from data.constants import LLMFinishReason, LLMPhase
-from data.models import LLMDecision, LLMResponse, LLMToolCall
+
+from repomind.data.constants import LLMFinishReason, LLMPhase
+from repomind.data.models import LLMDecision, LLMResponse, LLMToolCall
 
 from .config import (
     MODEL,

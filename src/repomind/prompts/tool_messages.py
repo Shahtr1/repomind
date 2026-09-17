@@ -1,8 +1,7 @@
 import json
 
-from data.models import AgentState, Message, ToolExecutionResult
-
-from src.repomind.state import create_message
+from repomind.data.models import AgentState, Message, ToolExecutionResult
+from repomind.state import create_message
 
 # Makes the execution outcome visible to the LLM
 

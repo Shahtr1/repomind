@@ -81,13 +81,10 @@ pytest -q
 
 ## Repository structure
 
-The project tree below excludes files and folders ignored by Git, such as local environment, IDE, cache, and generated artifacts. This keeps the source tree focused on the actual application code.
-
 ```text
 repomind/
 ├── README.md
 ├── pyproject.toml
-├── .gitignore
 ├── src/
 │   └── repomind/
 │       ├── __init__.py
@@ -102,16 +99,18 @@ repomind/
 │       │   ├── builder.py
 │       │   ├── dependencies.py
 │       │   └── selection.py
+│       ├── data/
+│       │   ├── __init__.py
+│       │   ├── constants.py
+│       │   └── models.py
 │       ├── display.py
 │       ├── evidence/
 │       │   ├── __init__.py
 │       │   └── store.py
-│       ├── event_messages.py
 │       ├── executor.py
 │       ├── guardrails.py
 │       ├── llm.py
 │       ├── main.py
-│       ├── models.py
 │       ├── orchestration/
 │       │   ├── __init__.py
 │       │   ├── approvals.py
@@ -120,26 +119,30 @@ repomind/
 │       │   ├── persistence.py
 │       │   ├── responses.py
 │       │   ├── runner.py
-│       │   └── state_machine.py
+│       │   ├── state_machine.py
+│       │   └── tool_calls.py
 │       ├── policy.py
+│       ├── prompts/
+│       │   ├── __init__.py
+│       │   ├── event_messages.py
+│       │   ├── recovery.py
+│       │   └── tool_messages.py
 │       ├── registry.py
 │       ├── retrieval/
 │       │   ├── __init__.py
 │       │   └── parser.py
 │       ├── state.py
-│       ├── tool_messages.py
 │       ├── tool_results.py
 │       └── tools.py
 ├── tests/
 │   └── test_guardrails.py
-└── src/repomind.egg-info/
-    (ignored by Git; generated packaging metadata)
+└── .gitignore
 ```
 
 ## Notes
 
 - `src/repomind/` contains the implementation of the agent, orchestration flow, LLM integration, context assembly, policy checks, and execution logic.
 - `src/repomind/orchestration/` holds the request lifecycle pieces such as approvals, runner flow, decision handling, and state transitions.
+- `src/repomind/prompts/` stores the prompt templates and message definitions used during execution and recovery flows.
+- `src/repomind/data/` contains shared constants and models used by the agent.
 - `tests/` holds the project’s validation coverage, currently centered on guardrail behavior.
-- `src/repomind.egg-info/` is excluded from git tracking via `.gitignore` and is therefore shown only as a generated metadata note rather than a source folder.
-- Git-ignored and generated items such as `.venv/`, `.idea/`, `.pytest_cache/`, `.ruff_cache/`, and `.git/` are intentionally omitted from the structure above.

@@ -1,4 +1,4 @@
-from data.models import ToolPolicy
+from repomind.data.models import ToolPolicy
 
 tool_policy: dict[str, ToolPolicy] = {
     "read_file": ToolPolicy(

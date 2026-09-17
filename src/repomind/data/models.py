@@ -1,8 +1,9 @@
 from collections.abc import Callable
 from typing import Any
 
-from config import MAX_STEPS
 from pydantic import BaseModel, Field, StrictStr
+
+from repomind.config import MAX_STEPS
 
 from .constants import (
     AgentEventType,

@@ -1,5 +1,5 @@
-from data.constants import LLMDecisionType, LLMFinishReason, LLMPhase
-from data.models import AgentState
+from repomind.data.constants import LLMDecisionType, LLMFinishReason, LLMPhase
+from repomind.data.models import AgentState
 
 from ..context.builder import build_context
 from ..llm import chat
