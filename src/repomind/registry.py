@@ -44,7 +44,7 @@ create_note_tool = {
     "type": "function",
     "function": {
         "name": "create_note",
-        "description": ("Creates a text file named agent_note.txt with the supplied content."),
+        "description": "Creates a text file named agent_note.txt with the supplied content.",
         "parameters": CreateNoteArguments.model_json_schema(),
     },
 }

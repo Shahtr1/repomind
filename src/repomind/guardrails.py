@@ -1,6 +1,7 @@
 import re
 from enum import StrEnum
 
+from data.constants import GuardrailStatus
 from pydantic import BaseModel
 
 from repomind.data.models import AgentState, GuardrailResult
@@ -139,7 +140,7 @@ def check_completion(
     if result is not None:
         return result
 
-    return GuardrailResult(status="allowed")
+    return GuardrailResult(status=GuardrailStatus.ALLOWED)
 
 
 def check_answer_content(
@@ -150,7 +151,7 @@ def check_answer_content(
         return None
 
     return GuardrailResult(
-        status="blocked",
+        status=GuardrailStatus.BLOCKED,
         reason="The model attempted to complete without providing a final answer.",
         required_action=(
             "Continue the investigation and provide a complete "
@@ -170,7 +171,7 @@ def check_evidence_requirement(
         return None
 
     return GuardrailResult(
-        status="blocked",
+        status=GuardrailStatus.BLOCKED,
         reason="Required source evidence is missing.",
         required_action="Inspect the actual repository source before answering.",
     )
@@ -217,7 +218,7 @@ def check_source_references(
         problems.append("Ambiguous source references: " + ", ".join(sorted(ambiguous_sources)))
 
     return GuardrailResult(
-        status="blocked",
+        status=GuardrailStatus.BLOCKED,
         reason=(
             "The proposed answer contains source references that "
             "cannot be safely verified against collected evidence. " + " ".join(problems)
