@@ -1,3 +1,5 @@
+from data.constants import ToolExecutionStatus
+
 from repomind.data.models import ToolExecutionResult, ToolOutcome
 
 from .policy import tool_policy
@@ -15,7 +17,9 @@ def execute_tool(
     # Tool existence
 
     if tool_name not in tool_registry:
-        return ToolExecutionResult(status="error", error=f"Unknown tool: {tool_name}")
+        return ToolExecutionResult(
+            status=ToolExecutionStatus.ERROR, error=f"Unknown tool: {tool_name}"
+        )
 
     # Policy
 
@@ -23,7 +27,7 @@ def execute_tool(
 
     if policy is None or not policy.allowed:
         return ToolExecutionResult(
-            status="denied",
+            status=ToolExecutionStatus.DENIED,
             error=f"Tool '{tool_name}' is denied by application policy.",
         )
 
@@ -31,7 +35,7 @@ def execute_tool(
 
     if policy.requires_approval and not approved:
         return ToolExecutionResult(
-            status="approval_required",
+            status=ToolExecutionStatus.APPROVAL_REQUIRED,
             error=f"Human approval is required before executing '{tool_name}'.",
         )
 
@@ -48,7 +52,7 @@ def execute_tool(
         arguments = argument_schema.model_validate(tool_arguments)
 
     except Exception as error:
-        return ToolExecutionResult(status="invalid_arguments", error=str(error))
+        return ToolExecutionResult(status=ToolExecutionStatus.INVALID_ARGUMENTS, error=str(error))
 
     # Execution
 
@@ -57,7 +61,7 @@ def execute_tool(
 
         if not isinstance(outcome, ToolOutcome):
             return ToolExecutionResult(
-                status="error",
+                status=ToolExecutionStatus.ERROR,
                 error=(
                     f"Tool '{tool_name}' returned an invalid outcome type: {type(outcome).__name__}"
                 ),
@@ -65,14 +69,14 @@ def execute_tool(
 
         if not outcome.success:
             return ToolExecutionResult(
-                status="error",
+                status=ToolExecutionStatus.ERROR,
                 error=outcome.error,
             )
 
         return ToolExecutionResult(
-            status="success",
+            status=ToolExecutionStatus.SUCCESS,
             result=outcome.result,
         )
 
     except Exception as error:
-        return ToolExecutionResult(status="error", error=str(error))
+        return ToolExecutionResult(status=ToolExecutionStatus.ERROR, error=str(error))
